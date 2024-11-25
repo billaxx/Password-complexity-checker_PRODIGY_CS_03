@@ -1,42 +1,54 @@
-import random
-import string
+import re
 
-def check_password_strength(password):
-    """Checks the strength of the password."""
+def assess_password_strength(password):
+    """
+    Assess the strength of a given password based on criteria.
+    
+    :param password: Password to be assessed (string)
+    :return: A tuple containing the password strength (string) and feedback (list of issues)
+    """
+    feedback = []
+
+    # Check length
     if len(password) < 8:
-        return "Weak: Password must be at least 8 characters long."
-    if not any(char.isdigit() for char in password):
-        return "Weak: Password must contain at least one digit."
-    if not any(char.islower() for char in password):
-        return "Weak: Password must contain at least one lowercase letter."
-    if not any(char.isupper() for char in password):
-        return "Weak: Password must contain at least one uppercase letter."
-    if not any(char in string.punctuation for char in password):
-        return "Weak: Password must contain at least one special character."
-    return "Strong"
+        feedback.append("Password must be at least 8 characters long.")
 
-def generate_password():
-    """Generates a strong password."""
-    length = 12  # Default password length
-    characters = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(random.choice(characters) for _ in range(length))
+    # Check for uppercase letters
+    if not re.search(r'[A-Z]', password):
+        feedback.append("Password should include at least one uppercase letter.")
 
-def main():
-    while True:
-        password = input("Enter your password: ")
-        strength = check_password_strength(password)
-        print(f"Password Strength: {strength}")
-        
-        if "Weak" in strength:
-            choice = input("Do you want the system to generate a strong password for you? (yes/no): ").strip().lower()
-            if choice == 'yes':
-                strong_password = generate_password()
-                print(f"Generated Password: {strong_password}")
-            else:
-                print("Please try creating a stronger password!")
-        else:
-            print("Your password is strong. Good job!")
-            break
+    # Check for lowercase letters
+    if not re.search(r'[a-z]', password):
+        feedback.append("Password should include at least one lowercase letter.")
+
+    # Check for numbers
+    if not re.search(r'[0-9]', password):
+        feedback.append("Password should include at least one number.")
+
+    # Check for special characters
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        feedback.append("Password should include at least one special character (e.g., @, #, $).")
+
+    # Determine password strength
+    if len(feedback) == 0:
+        strength = "Strong"
+    elif len(feedback) <= 2:
+        strength = "Moderate"
+    else:
+        strength = "Weak"
+
+    return strength, feedback
+
 
 if __name__ == "__main__":
-    main()
+    print("Password Strength Checker")
+    password = input("Enter a password to check its strength: ")
+    strength, feedback = assess_password_strength(password)
+
+    print(f"\nPassword Strength: {strength}")
+    if feedback:
+        print("Feedback:")
+        for issue in feedback:
+            print(f"- {issue}")
+    else:
+        print("Your password is strong. Great job!")
